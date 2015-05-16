@@ -24,27 +24,13 @@
 	<link href="index.css" rel="stylesheet">
 	<script src="<?php echo $URLPv; ?>lib/jquery/jquery-1.11.2.js"></script>
 	<script src="<?php echo $URLPv; ?>lib/bootstrap/js/bootstrap.js"></script>
+	<?php include_once("analyticstracking.php") ?>
+	<?php require_once(dirname(__FILE__) . '/lib/std.php'); ?> 
 
-	<?php require_once(dirname(__FILE__) . '/../lib/std.php'); ?> 
-<!-- Begin comScore Tag -->
-	<script>
-		var _comscore = _comscore || [];
-		_comscore.push({ c1: "2", c2: "17985150" });
-		(function() {
-			var s = document.createElement("script"), el = document.getElementsByTagName("script")[0]; s.async = true;
-			s.src = (document.location.protocol == "https:" ? "https://sb" : "http://b") + ".scorecardresearch.com/beacon.js";
-			el.parentNode.insertBefore(s, el);
-		})();
-	</script>
-	<noscript>
-		<img src="http://b.scorecardresearch.com/p?c1=2&c2=17985150&cv=2.0&cj=1" />
-	</noscript>
-<!-- End comScore Tag -->
   </head>
 
   <body class="outliner">
 	<!-- preprocess start-->
-<?php include_once("analyticstracking.php") ?>
 	<div id="fb-root"></div>
 
 	<script>
@@ -60,8 +46,6 @@
 <?php
 	setLog($DBmain, 'info', 'into index', ''); 
 	$now = date('Y-m-d H:o:s', time());
-	
-	require_once(dirname(__FILE__) . "/../lib/updateState.php"); 
 ?>
 	<!-- preprocess end -->
 
@@ -99,160 +83,15 @@
 	<!-- header end -->
 
 <!-- 首頁內容 start -->
+<div class="container">
+	<div class="news">
 	
-	<!-- 今日必看 start -->
-	<div class="must">
-
-		<h1>今日必看</h1>
-			<!-- 今日必看右側文字-->
-			<p class="must-list">
-			<?php
-				$result = $DBmain->query("SELECT * FROM `title` WHERE `state` < 2 ORDER BY `tID` DESC LIMIT 6; "); 
-				$i = 0; 
-
-				while($row = $result->fetch_array(MYSQLI_BOTH)){
-					if($i>0)
-						echo ' / '; 
-					echo "<a href=\"{$row['URL']}\">{$row['titleText']}</a>"; 
-					$i++; 
-				}
-			?>
-			</p>
-			
-			<hr />
-
-		<!-- 今日必看 焦點 -->
-		<div class="content-focus">
-		<?php
-			$result->free(); 
-			$result = $DBmain->query("SELECT * FROM `must` WHERE `state` = 1 ORDER BY `startTime` DESC LIMIT 1; ");
-			$row = $result->fetch_array(MYSQLI_BOTH); 
-		?>
-			<a href="<?php echo $row['URL']; ?>"><img src="<?php echo $URLPv . $row['imageURL']; ?>" /></a>
-			<h3><a href="<?php echo $row['URL']; ?>"><?php echo $row['titleText']; ?></a></h3>
-			<p><a href="<?php echo $row['URL']; ?>"><?php echo $row['contentText']; ?></a></p>
-			<div class="emphasize-color"><?php echo getFacebookLikeFormatLink($row['URL'], "button_count"); ?></div>
-			<img class="must-today" src="<?php echo $URLPv; ?>img/today.png">
-
-		</div>
-
-		<!-- 今日必看 col*row 項目 -->
-		<?php
-			$result->free(); 
-			$posWidth = 399; 
-			$posHeight = 81;
-			$width = 184; 
-			$height = 165; 
-			$colNum = 3; 
-			$rowNum = 2; 
-			$limit = $colNum * $rowNum; 
-			$result = $DBmain->query("SELECT * FROM `must` WHERE `state` = 0 ORDER BY `startTime` DESC LIMIT {$limit}; ");
-			$i = $j = 0; 
-			while($row = $result->fetch_array(MYSQLI_BOTH)){
-				$w = $posWidth + $j*($width+10); 
-				$h = $posHeight + $i*($height+10); 
-		?>
-			<div class="content-formal" style="top: <?php echo $h; ?>px; left: <?php echo $w; ?>px; ">
-				<a href="<?php echo $row['URL']; ?>"><img src="<?php echo $URLPv . $row['imageURL']; ?>" /></a>
-				<h3><a href="<?php echo $row['URL']; ?>"><?php echo $row['titleText']; ?></a></h3>
-				<p><a href="<?php echo $row['URL']; ?>"><?php echo $row['contentText']; ?></a></p>
-				<div class="emphasize-color"><?php echo getFacebookLikeFormatLink($row['URL'], "button_count"); ?></div>
-			</div>
-		<?php
-				if($j==$colNum-1){
-					$j = 0; 
-					$i++; 	
-				}
-				else {
-					$j++; 	
-				}
-			}
-		?>
-	</div>
-	<!-- 今日必看 end -->
-
-	<!-- 精彩推薦 start-->
-	<div class="recommend">
-		<h1>精彩推薦</h1>
-		<hr />
-		<div class="content-recommend">
-			<!-- 精彩推薦 焦點 -->
-			<?php 
-				$result->free();
-				$limit = 10;  
-				$result = $DBmain->query("SELECT * FROM `recommend` WHERE `state` = 1 ORDER BY `startTime` DESC LIMIT 1; "); 
-				$row = $result->fetch_array(MYSQLI_BOTH); 
-				if(isset($row)){
-					?>
-					<a href="<?php echo $row['URL']; ?>"><img src="<?php echo $URLPv . $row['imageURL']; ?>" /></a>
-					<h3><a href="<?php echo $row['URL']; ?>"><?php echo $row['text']; ?></a></h3>
-					<?php		
-					$limit = 6; 
-				}
-
-			?>
-		
-			<hr />
-			
-			<!-- 精彩推薦 一般 -->
-			<?php 
-				$result->free(); 
-				$result = $DBmain->query("SELECT * FROM `recommend` WHERE `state` = 0 ORDER BY `startTime` DESC LIMIT {$limit}; "); 
-				while($row = $result->fetch_array(MYSQLI_BOTH)){
-				?>
-					<p><a href="<?php echo $row['URL']; ?>"><?php echo $row['text']; ?></a></p>
-				<?php	
-				}
-			?>
-
-
-		</div>
-	</div>
-    
-	<!-- 精彩推薦 end -->
-
-	<!-- 小編狂推 start -->
-	<div class="editor">
-		<h1>小編狂推</h1>
-		<hr />
-		<!-- col*row 項目 -->
-		<?php
-			$result->free(); 
-			$posWidth = 0; 
-			$posHeight = 81;
-			$width = 184; 
-			$height = 165; 
-			$colNum = 6; 
-			$rowNum = 2; 
-			$limit = $colNum * $rowNum; 
-			$result = $DBmain->query("SELECT * FROM `editor` WHERE `state` = 0 ORDER BY `startTime` DESC LIMIT {$limit}; ");
-			$i = $j = 0; 
-			while($row = $result->fetch_array(MYSQLI_BOTH)){
-				$w = $posWidth + $j*($width+10); 
-				$h = $posHeight + $i*($height+10); 
-		?>
-			<div class="content-formal" style="top: <?php echo $h; ?>px; left: <?php echo $w; ?>px; ">
-				<a href="<?php echo $row['URL']; ?>"><img src="<?php echo $URLPv . $row['imageURL']; ?>" /></a>
-				<h3><a href="<?php echo $row['URL']; ?>"><?php echo $row['titleText']; ?></a></h3>
-				<p><a href="<?php echo $row['URL']; ?>"><?php echo $row['contentText']; ?></a></p>
-				<div class="emphasize-color"><?php echo getFacebookLikeFormatLink($row['URL'], "button_count"); ?></div>
-			</div>
-		<?php
-				if($j==$colNum-1){
-					$j = 0; 
-					$i++; 	
-				}
-				else {
-					$j++; 	
-				}
-			}
-		?>
-	</div>
-	<!-- 小編狂推 end -->
+	</div>	
+</div>	
 <!-- 首頁內容 end -->
 
 <?php
-	require_once(dirname(__FILE__) . "/../lib/footer.php"); 
+	require_once(dirname(__FILE__) . "/lib/stdEnd.php"); 
 ?>	
 </html>
 
